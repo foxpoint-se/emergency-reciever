@@ -64,51 +64,52 @@ void loop() {
 
   TIME_NOW = millis();
 
-  // An incoming message is expected to contain 12 lines, loop over them and create frames
-  for(int i=1; i < (nof_new_lines + 1); i++){
+  // First check if there are any new incoming messages, if so print special msg and restart loop
+  int packet_size = LoRa.parsePacket();
+  if (packet_size) {
+    work_string = getIncomingMessage();
 
-    // First check if there are any new incoming messages, if so print special msg and restart loop
-    int packet_size = LoRa.parsePacket();
-    if (packet_size) {
-      work_string = getIncomingMessage();
-    }
-    
-    // Parse the string and create a tmp row to be displayed
-    index = work_string.indexOf("\n");
-    if (index >= 0) {
-      switch(i)
-      {
-        case 1:
-            timestamp = work_string.substring(0, index);
-            break;
+    // An incoming message is expected to contain 12 lines, loop over them and create frames
+    for(int i=1; i < (nof_new_lines + 1); i++){
+      
+      // Parse the string and create a tmp row to be displayed
+      index = work_string.indexOf("\n");
+      if (index >= 0) {
+        switch(i)
+        {
+          case 1:
+              timestamp = work_string.substring(0, index);
+              break;
 
-        case 2:
-            state = work_string.substring(0, index);
-            break;
+          case 2:
+              state = work_string.substring(0, index);
+              break;
 
-        case 3:
-            longitude = work_string.substring(0, index);
-            break;
+          case 3:
+              longitude = work_string.substring(0, index);
+              break;
 
-        case 4:
-            latitude = work_string.substring(0, index);
-            break;
+          case 4:
+              latitude = work_string.substring(0, index);
+              break;
 
-        case 5:
-            percent_bat_lvl = work_string.substring(0, index);
-            break;
+          case 5:
+              percent_bat_lvl = work_string.substring(0, index);
+              break;
 
-        // operator doesn't match any case constant +, -, *, /
-        default:
-            Serial.println(" ");
+          // operator doesn't match any case constant +, -, *, /
+          default:
+              Serial.println(" ");
+        }
+        
+        work_string = work_string.substring(index + 1);
+        
+      }else {
+        break;
       }
-      
-      work_string = work_string.substring(index + 1);
-      
-    }else {
-      break;
+  
     }
- 
+
   }
 
   bool valid_state = state != "-1";
