@@ -54,10 +54,10 @@ void setup() {
 
 void loop() {
   int index = 1;
-  String work_string = contents;
+  String work_string = "";
   String display_output = "";
   String timestamp = "";
-  String state = "";
+  String state = "-1";
   String longitude = "";
   String latitude = "";
   String percent_bat_lvl = "";
@@ -70,8 +70,7 @@ void loop() {
     // First check if there are any new incoming messages, if so print special msg and restart loop
     int packet_size = LoRa.parsePacket();
     if (packet_size) {
-      Serial.println("Message recieved!!");
-      contents = getIncomingMessage();
+      work_string = getIncomingMessage();
     }
     
     // Parse the string and create a tmp row to be displayed
@@ -101,7 +100,7 @@ void loop() {
 
         // operator doesn't match any case constant +, -, *, /
         default:
-            Serial.print("Error! operator is not correct");
+            Serial.println(" ");
       }
       
       work_string = work_string.substring(index + 1);
@@ -112,7 +111,9 @@ void loop() {
  
   }
 
-  if ((TIME_NOW - LAST_FRAME_UPDATE) > FRAME_RATE_MS) {
+  bool valid_state = state != "-1";
+
+  if (((TIME_NOW - LAST_FRAME_UPDATE) > FRAME_RATE_MS) && valid_state) {
     display.clearDisplay();
     display.setCursor(0,0);
     display.print("T:");
@@ -125,7 +126,23 @@ void loop() {
     display.print(percent_bat_lvl);
     display.print("    State:");
     display.println(state);
-    display.display();  
+    display.display();
+
+    // Also display data on the serial monitor
+    Serial.print("Timestamp: ");
+    Serial.println(timestamp);
+    Serial.print("Longitude: ");
+    Serial.println(longitude);
+    Serial.print("Latitude: ");
+    Serial.println(latitude);
+    Serial.print("Battery percentage: ");
+    Serial.print(percent_bat_lvl);
+    Serial.println("%");
+    Serial.print("State: ");
+    Serial.println(state);
+    Serial.println();
+
+    state = "-1";
   }
 }
 
@@ -135,6 +152,6 @@ String getIncomingMessage(){
   while (LoRa.available()) {
     tmp_content += (char)LoRa.read();
   }
-  Serial.println(tmp_content);
+
   return tmp_content;
 }
